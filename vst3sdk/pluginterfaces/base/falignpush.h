@@ -29,6 +29,8 @@
 	//! @brief warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
 	#ifdef _MSC_VER
 		#pragma warning(disable : 4103)
+	#elif defined(__clang__)
+		#pragma GCC diagnostic ignored "-Wpragma-pack"
 	#endif
 	#pragma pack(push)
 	#if SMTG_PLATFORM_64
