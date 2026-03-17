@@ -5,7 +5,11 @@
 #include "win32taskexecutor.h"
 #include "../../vstguidebug.h"
 #include <atomic>
+#ifdef __MINGW32__
+#include <future>
+#else
 #include <ppltasks.h>
+#endif
 #include <string>
 #include <thread>
 #include <mutex>
@@ -22,14 +26,22 @@ struct TaskWrapper final : std::enable_shared_from_this<TaskWrapper>
 
 	void schedule ()
 	{
+#ifdef __MINGW32__
+		std::thread ([This = shared_from_this ()] () {
+			This->task ();
+		}).detach ();
+#else
 		f = std::make_shared<concurrency::task<void>> ([This = shared_from_this ()] () {
 			This->task ();
 			This->f = nullptr;
 		});
+#endif
 	}
 
 	Tasks::Task task;
+#ifndef __MINGW32__
 	std::shared_ptr<concurrency::task<void>> f;
+#endif
 };
 
 //------------------------------------------------------------------------
@@ -153,6 +165,19 @@ struct SerialQueue final : Queue,
 		numTasks++;
 
 		std::lock_guard<std::mutex> guard (mutex);
+#ifdef __MINGW32__
+		{
+			auto done = std::make_shared<std::promise<void>> ();
+			auto prev = std::move (prevDone);
+			std::thread ([prev = std::move (prev), t = std::move (t), done] () {
+				if (prev.valid ())
+					prev.wait ();
+				t ();
+				done->set_value ();
+			}).detach ();
+			prevDone = done->get_future ().share ();
+		}
+#else
 		if (hasTask)
 		{
 			ctask = ctask.then (std::move (t));
@@ -162,12 +187,17 @@ struct SerialQueue final : Queue,
 			hasTask = true;
 			ctask = concurrency::task<void> (std::move (t));
 		}
+#endif
 	}
 
 private:
-	mutable bool hasTask {false};
 	std::string name;
+#ifdef __MINGW32__
+	mutable std::shared_future<void> prevDone;
+#else
+	mutable bool hasTask {false};
 	mutable concurrency::task<void> ctask;
+#endif
 	mutable std::mutex mutex;
 };
 

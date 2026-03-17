@@ -149,6 +149,8 @@ struct SurfaceRedrawArea : IPlatformTimerCallback
 
 	void restart ()
 	{
+	// IDCompositionVisual3 is not defined in llvm-mingw and Wine doesn't implement dcomp.dll. So just stub this code out.
+	#ifndef __MINGW32__
 		COM::Ptr<IDCompositionVisual3> vis3;
 		auto hr = surface->visual->QueryInterface (__uuidof(IDCompositionVisual3),
 												   reinterpret_cast<void**> (vis3.adoptPtr ()));
@@ -162,6 +164,7 @@ struct SurfaceRedrawArea : IPlatformTimerCallback
 		}
 		timer.stop ();
 		timer.start (animationTime);
+	#endif
 	}
 
 	void fire () override
@@ -881,6 +884,10 @@ bool VisualSurfacePair::setSize (uint32_t w, uint32_t h)
 //-----------------------------------------------------------------------------
 bool VisualSurfacePair::setOpacity (float o)
 {
+// IDCompositionVisual3 is not defined in llvm-mingw and Wine doesn't implement dcomp.dll. So just stub this code out.
+#ifdef __MINGW32__
+	return false;
+#else
 	COM::Ptr<IDCompositionVisual3> vis3;
 	auto hr = visual->QueryInterface (__uuidof(IDCompositionVisual3),
 									  reinterpret_cast<void**> (vis3.adoptPtr ()));
@@ -889,6 +896,7 @@ bool VisualSurfacePair::setOpacity (float o)
 		hr = vis3->SetOpacity (o);
 	}
 	return SUCCEEDED (hr);
+#endif
 }
 
 //------------------------------------------------------------------------

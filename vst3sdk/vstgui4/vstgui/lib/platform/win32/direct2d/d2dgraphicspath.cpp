@@ -15,7 +15,7 @@
 #include <winnt.h>
 #include <cassert>
 
-#if defined(__GNUC__) && !defined(__clang__)
+#ifdef __MINGW32__
 #define __maybenull
 #define __out
 #endif

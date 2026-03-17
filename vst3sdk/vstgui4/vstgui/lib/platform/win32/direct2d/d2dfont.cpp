@@ -42,7 +42,16 @@ struct CustomFonts
 		if (auto fs = fontSet.get ())
 		{
 			COM::Ptr<IDWriteFontSet> matchingFonts;
+#ifdef __MINGW32__
+			// MinGW/WIDL headers can't use C++ overloading in COM vtables, so
+			// when an interface has multiple methods with the same name, they
+			// append underscores to disambiguate. IDWriteFontSet::GetMatchingFonts
+			// has two overloads; the name-based variant is GetMatchingFonts_ in
+			// MinGW's dwrite_3.h.
+			if (SUCCEEDED (fs->GetMatchingFonts_ (name, fontWeight, fontStretch, fontStyle,
+#else
 			if (SUCCEEDED (fs->GetMatchingFonts (name, fontWeight, fontStretch, fontStyle,
+#endif
 												 matchingFonts.adoptPtr ())))
 				return matchingFonts->GetFontCount () > 0;
 		}
