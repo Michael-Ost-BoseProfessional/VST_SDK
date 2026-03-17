@@ -59,6 +59,11 @@ function(smtg_create_lib_base_target)
             "$<$<CONFIG:RelWithDebInfo>:-DRELEASE=1>"
     )
     
+    # For Windows with Clang (llvm-mingw), also define _DEBUG for Debug builds
+    if(WIN32 AND CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+        target_compile_definitions(base PUBLIC $<$<CONFIG:Debug>:_DEBUG>)
+    endif()
+
     target_compile_features(base
         PUBLIC
             cxx_std_17
