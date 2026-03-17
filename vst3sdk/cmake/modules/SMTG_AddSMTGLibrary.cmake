@@ -150,19 +150,35 @@ endfunction(smtg_target_create_link_to_plugin)
 function(smtg_target_add_folder_icon target icon)
     set(DESKTOP_INI_PATH ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/../templates/desktop.ini.in)
     get_target_property(PLUGIN_PACKAGE_PATH ${target} SMTG_PLUGIN_PACKAGE_PATH)
-    add_custom_command(
-        TARGET ${target} POST_BUILD
-        COMMENT "[SMTG] Copy PlugIn.ico and desktop.ini and change their attributes."
-        COMMAND ${CMAKE_COMMAND} -E copy
-            ${icon}
-            ${PLUGIN_PACKAGE_PATH}/PlugIn.ico
-        COMMAND ${CMAKE_COMMAND} -E copy
-            ${DESKTOP_INI_PATH}
-            ${PLUGIN_PACKAGE_PATH}/desktop.ini
-        COMMAND attrib +s ${PLUGIN_PACKAGE_PATH}/desktop.ini
-        COMMAND attrib +s ${PLUGIN_PACKAGE_PATH}/PlugIn.ico
-        COMMAND attrib +s ${PLUGIN_PACKAGE_PATH}
-    )
+
+    # Only use attrib command when building on Windows host (not cross-compiling)
+    if(CMAKE_HOST_WIN32)
+        add_custom_command(
+            TARGET ${target} POST_BUILD
+            COMMENT "[SMTG] Copy PlugIn.ico and desktop.ini and change their attributes."
+            COMMAND ${CMAKE_COMMAND} -E copy
+                ${icon}
+                ${PLUGIN_PACKAGE_PATH}/PlugIn.ico
+            COMMAND ${CMAKE_COMMAND} -E copy
+                ${DESKTOP_INI_PATH}
+                ${PLUGIN_PACKAGE_PATH}/desktop.ini
+            COMMAND attrib +s ${PLUGIN_PACKAGE_PATH}/desktop.ini
+            COMMAND attrib +s ${PLUGIN_PACKAGE_PATH}/PlugIn.ico
+            COMMAND attrib +s ${PLUGIN_PACKAGE_PATH}
+        )
+    else()
+        # Cross-compiling: skip attrib commands (they're just cosmetic for Windows Explorer)
+        add_custom_command(
+            TARGET ${target} POST_BUILD
+            COMMENT "[SMTG] Copy PlugIn.ico and desktop.ini (skipping attrib - cross-compiling)."
+            COMMAND ${CMAKE_COMMAND} -E copy
+                ${icon}
+                ${PLUGIN_PACKAGE_PATH}/PlugIn.ico
+            COMMAND ${CMAKE_COMMAND} -E copy
+                ${DESKTOP_INI_PATH}
+                ${PLUGIN_PACKAGE_PATH}/desktop.ini
+        )
+    endif()
 endfunction(smtg_target_add_folder_icon)
 
 #------------------------------------------------------------------------
