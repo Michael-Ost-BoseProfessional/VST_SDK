@@ -207,6 +207,8 @@ void FDebugBreak (const char* format, ...)
 		{
 #if SMTG_OS_WINDOWS	&& _MSC_VER
 			__debugbreak (); // intrinsic version of DebugBreak()
+#elif SMTG_OS_WINDOWS && (__arm64ec__ || __aarch64__)
+			__builtin_debugtrap ();
 #elif SMTG_OS_MACOS && __arm64__
 			raise (SIGSTOP);
 
