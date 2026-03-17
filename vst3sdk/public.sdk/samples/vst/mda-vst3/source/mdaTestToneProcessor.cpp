@@ -53,7 +53,7 @@ tresult PLUGIN_API TestToneProcessor::initialize (FUnknown* context)
 		addAudioInput (USTRING("Stereo In"), SpeakerArr::kStereo);
 		addAudioOutput (USTRING("Stereo Out"), SpeakerArr::kStereo);
 
-		param (TestToneParam::Mode) = 0.47f; //mode
+		param (TestToneParam::Mode) = 0.60f; //mode (sine)
 		param (TestToneParam::Level) = 0.71f; //level dB
 		param (TestToneParam::Channel) = 0.50f; //pan dB
 		param (TestToneParam::F1) = 0.57f; //freq1 B

@@ -184,7 +184,7 @@ tresult PLUGIN_API TestToneController::initialize (FUnknown* context)
 	tresult res = BaseController::initialize (context);
 	if (res == kResultTrue)
 	{
-		auto* modeParam = new IndexedParameter (USTRING("Mode"), USTRING(""), 8, 0.15, ParameterInfo::kCanAutomate | ParameterInfo::kIsList, pid (TestToneParam::Mode));
+		auto* modeParam = new IndexedParameter (USTRING("Mode"), USTRING(""), 8, 0.60, ParameterInfo::kCanAutomate | ParameterInfo::kIsList, pid (TestToneParam::Mode));
 		modeParam->setIndexString (0, UString128("MIDI #"));
 		modeParam->setIndexString (1, UString128("IMPULSE"));
 		modeParam->setIndexString (2, UString128("WHITE"));
