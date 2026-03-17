@@ -377,6 +377,27 @@ endif()
 ##########################################################################################
 add_library(${target} STATIC ${${target}_sources})
 
+if(MINGW)
+    # llvm-mingw defaults WINVER/_WIN32_WINNT to 0x0601 (Windows 7).
+    # vstgui needs Windows 10 APIs (e.g. WS_EX_NOREDIRECTIONBITMAP).
+    target_compile_definitions(${target} PRIVATE
+        WINVER=0x0A00
+        _WIN32_WINNT=0x0A00
+    )
+    # MSVC picks these up via #pragma comment(lib,...) but MinGW ignores those.
+    target_link_libraries(${target} PUBLIC
+        shlwapi
+        imm32
+        windowscodecs
+        d2d1
+        dwrite
+        d3d11
+        dwmapi
+        opengl32
+        glu32
+    )
+endif()
+
 target_precompile_headers(${target} PRIVATE cviewcontainer.h cdrawcontext.h)
 target_compile_definitions(${target} ${VSTGUI_COMPILE_DEFINITIONS})
 vstgui_set_cxx_version(${target} ${VSTGUI_CXX_VERSION})
