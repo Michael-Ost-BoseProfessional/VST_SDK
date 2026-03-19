@@ -151,26 +151,35 @@ public:
 
 	//--- -----------------------------------------------------------------------
 	HINSTANCE loadAsPackage (const std::string& inPath, std::string& errorDescription,
-	                         const char* archString = architectureString)
+							 const char* archString = architectureString)
 	{
-		namespace StringConvert = Steinberg::Vst::StringConvert;
+		auto load_as_package = [this](const std::string& inPath, std::string& errorDescription,
+							  const char* archString)
+		{
+			namespace StringConvert = Steinberg::Vst::StringConvert;
+		
+			filesystem::path p (inPath);
+		
+			auto filename = p.filename ();
+			p /= "Contents";
+			p /= archString;
+			p /= filename;
+			const std::wstring wString = p.generic_wstring ();
+			HINSTANCE instance = LoadLibraryW (reinterpret_cast<LPCWSTR> (wString.data ()));
+			if (instance == nullptr)
+				this->getLastError (p.string (), errorDescription);
+			return instance;
+		};
 
-		filesystem::path p (inPath);
+		std::string path(inPath);
 
-		auto filename = p.filename ();
-		p /= "Contents";
-		p /= archString;
-		p /= filename;
-		const std::wstring wString = p.generic_wstring ();
-		HINSTANCE instance = LoadLibraryW (reinterpret_cast<LPCWSTR> (wString.data ()));
+		HINSTANCE instance = load_as_package(inPath, errorDescription, archString);
 #if SMTG_CPU_ARM_64EC
 		if (instance == nullptr)
-			instance = loadAsPackage (inPath, errorDescription, architectureArm64XString);
+			instance = load_as_package (inPath, errorDescription, architectureArm64XString);
 		if (instance == nullptr)
-			instance = loadAsPackage (inPath, errorDescription, architectureX64String);
+			instance = load_as_package (inPath, errorDescription, architectureX64String);
 #endif // SMTG_CPU_ARM_64EC
-		if (instance == nullptr)
-			getLastError (p.string (), errorDescription);
 		return instance;
 	}
 
