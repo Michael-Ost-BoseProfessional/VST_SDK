@@ -182,6 +182,9 @@ protected:
 
 //------------------------------------------------------------------------
 template <typename T>
+#if defined(__arm64ec__)
+__attribute__((noinline))
+#endif
 inline Steinberg::IPtr<T> PluginFactory::createInstance (const UID& classID) const noexcept
 {
 	T* obj = nullptr;
